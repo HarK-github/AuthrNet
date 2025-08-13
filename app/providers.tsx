@@ -3,11 +3,11 @@
 import { WagmiProvider } from "wagmi";
 import { config } from "./config";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Profile } from "./components/profile";
-import { Account } from "./components/account";
+import { Profile } from "./components/profile"; 
 import { WalletOptions } from "./components/wallet-options";
 import { useAccount } from "wagmi";
 import type { State } from "wagmi"; // Make sure this is imported
+import { TopNavbar } from "./components/navbar_tp";
 
 const queryClient = new QueryClient();
 
@@ -19,12 +19,12 @@ function WalletGate({
   const { isConnected } = useAccount();
 
   if (!isConnected) {
-    return <WalletOptions />;
+    return <><TopNavbar /><WalletOptions /></>;
   }
 
   return (
-    <>
-    <Account />
+    <> 
+    <TopNavbar />
       {children}
       <Profile />
     </>

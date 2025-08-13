@@ -9,8 +9,8 @@ import { sepolia } from "viem/chains";
 export const publicClient = createPublicClient({
   chain: sepolia,
   transport: http(),
-});
-// Contract configuration
+}); 
+
 const articleRegistryConfig = {
   address:  getAddress("0x177e9303dbcc55009a32e83f39dd981a51077d64"),
   abi: abi,
@@ -35,7 +35,7 @@ interface ArticleList {
 }
 export async function getArticleCount() {
   try {
-    const count = await publicClient.readContract({
+    const count = await readContract(config,{
       address: publishingHubConfig.address,
       abi: publishingHubConfig.abi,
       functionName: "articleCount",

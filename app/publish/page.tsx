@@ -1,75 +1,75 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { useState } from "react"
-import { Progress } from "@/components/ui/progress"
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Switch } from "@/components/ui/switch"
-import { Loader2 } from "lucide-react"
-import { uploadToPinata } from "../utils/uploadToPinata"
-import { publishArticle } from "@/app/utils/deployArticle" // updated import
+import * as React from "react";
+import { useState } from "react";
+import { Progress } from "@/components/ui/progress";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Loader2 } from "lucide-react";
+import { uploadToPinata } from "@/app/utils/uploadToPinata";
+import { publishArticle } from "@/app/utils/deployArticle";
 
 export default function UploadArticlePage() {
-  const [file, setFile] = useState<File | null>(null)
-  const [fileUrl, setFileUrl] = useState<string | null>(null)
-  const [isPaywalled, setIsPaywalled] = useState(false)
-  const [authorName, setAuthorName] = useState("")
-  const [authorLink, setAuthorLink] = useState("")
-  const [progress, setProgress] = useState(0)
-  const [ipfsId, setIpfsId] = useState<string | null>(null)
-  const [isUploading, setIsUploading] = useState(false)
-  const [price, setPrice] = useState("")
-  const [txHash, setTxHash] = useState<string | null>(null)
-  const [articleId, setArticleId] = useState<number | null>(null)
+  const [file, setFile] = useState<File | null>(null);
+  const [fileUrl, setFileUrl] = useState<string | null>(null);
+  const [isPaywalled, setIsPaywalled] = useState(false);
+  const [authorName, setAuthorName] = useState("");
+  const [authorLink, setAuthorLink] = useState("");
+  const [progress, setProgress] = useState(0);
+  const [ipfsId, setIpfsId] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [price, setPrice] = useState("");
+  const [txHash, setTxHash] = useState<string | null>(null);
+  const [articleId, setArticleId] = useState<number | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0] || null
-    setFile(selectedFile)
-    setIpfsId(null)
-    setTxHash(null)
-    setArticleId(null)
+    const selectedFile = e.target.files?.[0] || null;
+    setFile(selectedFile);
+    setIpfsId(null);
+    setTxHash(null);
+    setArticleId(null);
 
     if (selectedFile) {
-      const url = URL.createObjectURL(selectedFile)
-      setFileUrl(url)
+      setFileUrl(URL.createObjectURL(selectedFile));
     } else {
-      setFileUrl(null)
+      setFileUrl(null);
     }
-  }
+  };
 
   const handleUpload = async () => {
-    if (!file || (isPaywalled && !price)) return
-    setIsUploading(true)
-    setProgress(10)
+    if (!file || (isPaywalled && !price)) return;
+
+    setIsUploading(true);
+    setProgress(10);
 
     try {
-      // 1. Upload file to IPFS
-      const cid = await uploadToPinata(file)
-      setProgress(50)
-      setIpfsId(cid)
+      // 1️⃣ Upload to IPFS
+      const cid = await uploadToPinata(file);
+      setProgress(50);
+      setIpfsId(cid);
 
-      // 2. Publish to blockchain
+      // 2️⃣ Publish to blockchain
       const { articleId, txHash } = await publishArticle(
         file.name,
-        cid,
+        cid, 
         isPaywalled ? price : "0"
-      )
+      );
 
-      setProgress(100)
-      setArticleId(articleId)
-      setTxHash(txHash)
+      setProgress(100);
+      setArticleId(articleId);
+      setTxHash(txHash);
     } catch (err) {
-      console.error("Upload failed:", err)
-      setProgress(0)
+      console.error("Upload failed:", err);
+      setProgress(0);
     } finally {
-      setIsUploading(false)
+      setIsUploading(false);
     }
-  }
+  };
 
-  const etherscanBase = "https://sepolia.etherscan.io/tx/" // change if using another testnet
+  const etherscanBase = "https://sepolia.etherscan.io/tx/";
 
   return (
     <div className="p-6 flex flex-col lg:flex-row gap-6">
@@ -81,13 +81,7 @@ export default function UploadArticlePage() {
         <CardContent className="space-y-4">
           <div>
             <Label htmlFor="file">PDF File</Label>
-            <Input
-              id="file"
-              type="file"
-              accept=".pdf"
-              onChange={handleFileChange}
-              className="mt-1"
-            />
+            <Input id="file" type="file" accept=".pdf" onChange={handleFileChange} className="mt-1" />
           </div>
 
           <div>
@@ -121,7 +115,7 @@ export default function UploadArticlePage() {
 
           {isPaywalled && (
             <div>
-              <Label htmlFor="price">Article Price (in ETH)</Label>
+              <Label htmlFor="price">Article Price (ETH)</Label>
               <Input
                 id="price"
                 type="number"
@@ -142,23 +136,14 @@ export default function UploadArticlePage() {
             </div>
           )}
 
-          {ipfsId && (
-            <div className="text-green-700 text-sm space-y-1">
-              ✅ Uploaded to IPFS: <code>{ipfsId}</code>
-            </div>
-          )}
+          {ipfsId && <div className="text-green-700 text-sm">✅ Uploaded to IPFS: <code>{ipfsId}</code></div>}
 
           {articleId !== null && txHash && (
-            <div className="text-blue-700 text-sm space-y-1">
+            <div className="text-blue-700 text-sm">
               🎉 Article published with ID: <strong>{articleId}</strong>
               <div>
                 View on Etherscan:{" "}
-                <a
-                  href={`${etherscanBase}${txHash}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline"
-                >
+                <a href={`${etherscanBase}${txHash}`} target="_blank" rel="noopener noreferrer" className="underline">
                   {txHash.slice(0, 10)}...
                 </a>
               </div>
@@ -169,7 +154,7 @@ export default function UploadArticlePage() {
           <Button
             className="w-full bg-[#268bd2] text-[#fdf6e3] hover:bg-[#2aa198]"
             onClick={handleUpload}
-            disabled={!file || isUploading}
+            disabled={!file || isUploading || (isPaywalled && !price)}
           >
             {isUploading ? (
               <div className="flex items-center gap-2">
@@ -186,10 +171,7 @@ export default function UploadArticlePage() {
       {/* PDF Preview */}
       <div className="w-full flex-1">
         {fileUrl ? (
-          <iframe
-            src={fileUrl}
-            className="w-full h-[600px] border border-gray-300 rounded-md shadow"
-          />
+          <iframe src={fileUrl} className="w-full h-[600px] border border-gray-300 rounded-md shadow" />
         ) : (
           <div className="w-full h-[600px] flex items-center justify-center text-gray-500 border border-dashed border-gray-300 rounded-md">
             No PDF Selected
@@ -197,5 +179,5 @@ export default function UploadArticlePage() {
         )}
       </div>
     </div>
-  )
+  );
 }

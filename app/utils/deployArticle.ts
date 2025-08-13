@@ -1,14 +1,14 @@
 import { writeContract, waitForTransactionReceipt, readContract } from "wagmi/actions";
 import { parseEther } from "viem";
 import { config } from "@/app/config";
-import {abi as AB} from "@/contracts/abis/ArticleRegistry.json"
+import { abi as AB } from "@/contracts/abis/ArticleRegistry.json";
 
 const articleRegistryConfig = {
   address: '0x177e9303dbcc55009a32e83f39dd981a51077d64',
   abi: AB,
 };
 
-// Publish a new article
+// -------------------- Publish a new article --------------------
 export async function publishArticle(
   title: string,
   ipfsHash: string,
@@ -21,22 +21,22 @@ export async function publishArticle(
       args: [title, ipfsHash, parseEther(priceInEth)],
     });
 
-    const receipt = await waitForTransactionReceipt(config, { hash: txHash });
-    
-    // Get the article ID from the event logs
-    const articleId = await readContract(config, {
+    await waitForTransactionReceipt(config, { hash: txHash });
+
+    // articleCount returns the total number of articles; the latest ID is count - 1
+    const articleId = Number(await readContract(config, {
       ...articleRegistryConfig,
       functionName: "articleCount",
-    }) - 1;
+    })) - 1;
 
-    return { articleId: Number(articleId), txHash };
+    return { articleId, txHash };
   } catch (error) {
     console.error("Error publishing article:", error);
     throw error;
   }
 }
 
-// Grant access to an article
+// -------------------- Grant access to an article --------------------
 export async function grantArticleAccess(
   userAddress: string,
   articleId: number
@@ -56,7 +56,7 @@ export async function grantArticleAccess(
   }
 }
 
-// Purchase access to an article
+// -------------------- Purchase access to an article --------------------
 export async function purchaseArticleAccess(
   articleId: number,
   priceInEth: string
@@ -77,7 +77,7 @@ export async function purchaseArticleAccess(
   }
 }
 
-// Check article details
+// -------------------- Get article details --------------------
 export async function getArticleDetails(articleId: number) {
   return readContract(config, {
     ...articleRegistryConfig,
@@ -86,7 +86,7 @@ export async function getArticleDetails(articleId: number) {
   });
 }
 
-// Check access permissions
+// -------------------- Check if a user has access --------------------
 export async function checkArticleAccess(
   userAddress: string,
   articleId: number
@@ -95,5 +95,22 @@ export async function checkArticleAccess(
     ...articleRegistryConfig,
     functionName: "checkAccess",
     args: [userAddress, articleId],
+  });
+}
+
+// -------------------- Get all articles --------------------
+export async function getAllArticles() {
+  return readContract(config, {
+    ...articleRegistryConfig,
+    functionName: "getArticles",
+    args: [/* pass user address if needed, or use zero address */ "0x0000000000000000000000000000000000000000"],
+  });
+}
+
+// -------------------- Get contract owner --------------------
+export async function getContractOwner(): Promise<string> {
+  return readContract(config, {
+    ...articleRegistryConfig,
+    functionName: "owner",
   });
 }

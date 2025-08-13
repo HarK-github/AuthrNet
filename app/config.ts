@@ -1,18 +1,15 @@
-import { sepolia } from 'wagmi/chains'
-import {http, createConfig ,cookieStorage,
-  createStorage} from 'wagmi'
-import { base, mainnet, optimism } from 'wagmi/chains'
-import { injected, metaMask, safe, walletConnect } from 'wagmi/connectors'
+import { sepolia } from 'wagmi/chains';
+import { http, createConfig, cookieStorage, createStorage } from 'wagmi';
+import { injected, metaMask, safe, walletConnect } from 'wagmi/connectors';
 
-
-const projectId = '<WALLETCONNECT_PROJECT_ID>'
+const projectId = '<WALLETCONNECT_PROJECT_ID>';
 
 export const config = createConfig({
-  chains: [mainnet, base],ssr: true,
-    storage: createStorage({
-      storage: cookieStorage,
-    }),
-  
+  chains: [sepolia],
+  ssr: true,
+  storage: createStorage({
+    storage: cookieStorage,
+  }),
   connectors: [
     injected(),
     walletConnect({ projectId }),
@@ -20,21 +17,19 @@ export const config = createConfig({
     safe(),
   ],
   transports: {
-    [mainnet.id]: http(),
-    [base.id]: http(),
+    [sepolia.id]: http(),
   },
-})
+});
 
 export function getConfig() {
   return createConfig({
-    chains: [mainnet, sepolia],
+    chains: [sepolia],
     ssr: true,
     storage: createStorage({
       storage: cookieStorage,
     }),
     transports: {
-      [mainnet.id]: http(),
       [sepolia.id]: http(),
     },
-  })
+  });
 }
