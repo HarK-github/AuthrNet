@@ -24,17 +24,26 @@ export default function UploadArticlePage() {
   const [price, setPrice] = useState("");
   const [txHash, setTxHash] = useState<string | null>(null);
   const [articleId, setArticleId] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0] || null;
-    setFile(selectedFile);
     setIpfsId(null);
     setTxHash(null);
     setArticleId(null);
+    setError(null);
 
     if (selectedFile) {
+      if (selectedFile.type !== "application/pdf") {
+        setError("Only PDF files are allowed.");
+        setFile(null);
+        setFileUrl(null);
+        return;
+      }
+      setFile(selectedFile);
       setFileUrl(URL.createObjectURL(selectedFile));
     } else {
+      setFile(null);
       setFileUrl(null);
     }
   };
@@ -44,17 +53,18 @@ export default function UploadArticlePage() {
 
     setIsUploading(true);
     setProgress(10);
+    setError(null);
 
     try {
-      // 1️⃣ Upload to IPFS
+      // Upload to IPFS
       const cid = await uploadToPinata(file);
       setProgress(50);
       setIpfsId(cid);
 
-      // 2️⃣ Publish to blockchain
+      // Publish on-chain
       const { articleId, txHash } = await publishArticle(
         file.name,
-        cid, 
+        cid,
         isPaywalled ? price : "0"
       );
 
@@ -63,6 +73,7 @@ export default function UploadArticlePage() {
       setTxHash(txHash);
     } catch (err) {
       console.error("Upload failed:", err);
+      setError("Upload failed. Please try again.");
       setProgress(0);
     } finally {
       setIsUploading(false);
@@ -72,50 +83,60 @@ export default function UploadArticlePage() {
   const etherscanBase = "https://sepolia.etherscan.io/tx/";
 
   return (
-    <div className="p-6 flex flex-col lg:flex-row gap-6">
-      {/* Upload Form Card */}
-      <Card className="w-full max-w-xl bg-[#eee8d5] shadow-md">
+    <div className="p-6 flex flex-col lg:flex-row gap-6 bg-gray-950 min-h-screen text-gray-100">
+      {/* Upload Form */}
+      <Card className="w-full max-w-xl bg-gray-900 border border-[#2c2c2c] shadow-lg">
         <CardHeader>
-          <CardTitle>Upload New Article</CardTitle>
+          <CardTitle className="text-gray-100">Upload New Article</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* File Upload */}
           <div>
-            <Label htmlFor="file">PDF File</Label>
-            <Input id="file" type="file" accept=".pdf" onChange={handleFileChange} className="mt-1" />
+            <Label htmlFor="file" className="text-gray-300">PDF File</Label>
+            <Input
+              id="file"
+              type="file"
+              accept=".pdf"
+              onChange={handleFileChange}
+              className="mt-1 bg-gray-990 border-[#3c3c3c] text-gray-200"
+            />
+            {error && <div className="text-red-500 text-sm mt-1">{error}</div>}
           </div>
 
+          {/* Author Info */}
           <div>
-            <Label htmlFor="authorName">Author Name (optional)</Label>
+            <Label htmlFor="authorName" className="text-gray-300">Author Name (optional)</Label>
             <Input
               id="authorName"
               type="text"
               placeholder="e.g. Jane Doe"
               value={authorName}
               onChange={(e) => setAuthorName(e.target.value)}
-              className="mt-1"
+              className="mt-1 bg-gray-990 border-[#3c3c3c] text-gray-200"
             />
           </div>
 
           <div>
-            <Label htmlFor="authorLink">Author Link (optional)</Label>
+            <Label htmlFor="authorLink" className="text-gray-300">Author Link (optional)</Label>
             <Input
               id="authorLink"
               type="url"
               placeholder="https://example.com"
               value={authorLink}
               onChange={(e) => setAuthorLink(e.target.value)}
-              className="mt-1"
+              className="mt-1 bg-gray-990 border-[#3c3c3c] text-gray-200"
             />
           </div>
 
+          {/* Paywall Switch */}
           <div className="flex items-center gap-4">
-            <Label htmlFor="paywall">Set as Paywalled</Label>
+            <Label htmlFor="paywall" className="text-gray-300">Set as Paywalled</Label>
             <Switch id="paywall" checked={isPaywalled} onCheckedChange={setIsPaywalled} />
           </div>
 
           {isPaywalled && (
             <div>
-              <Label htmlFor="price">Article Price (ETH)</Label>
+              <Label htmlFor="price" className="text-gray-300">Article Price (ETH)</Label>
               <Input
                 id="price"
                 type="number"
@@ -124,11 +145,12 @@ export default function UploadArticlePage() {
                 min="0"
                 step="0.001"
                 onChange={(e) => setPrice(e.target.value)}
-                className="mt-1"
+                className="mt-1 bg-gray-990 border-[#3c3c3c] text-gray-200"
               />
             </div>
           )}
 
+          {/* Progress + Status */}
           {isUploading && (
             <div className="mt-4 flex items-center gap-2">
               <Loader2 className="animate-spin w-5 h-5 text-blue-500" />
@@ -136,23 +158,33 @@ export default function UploadArticlePage() {
             </div>
           )}
 
-          {ipfsId && <div className="text-green-700 text-sm">✅ Uploaded to IPFS: <code>{ipfsId}</code></div>}
+          {ipfsId && (
+            <div className="text-green-500 text-sm mt-2 truncate">
+              ✅ Uploaded to IPFS: <code>{ipfsId}</code>
+            </div>
+          )}
 
           {articleId !== null && txHash && (
-            <div className="text-blue-700 text-sm">
+            <div className="text-blue-400 text-sm mt-2 space-y-1">
               🎉 Article published with ID: <strong>{articleId}</strong>
-              <div>
+              <div className="truncate">
                 View on Etherscan:{" "}
-                <a href={`${etherscanBase}${txHash}`} target="_blank" rel="noopener noreferrer" className="underline">
-                  {txHash.slice(0, 10)}...
+                <a
+                  href={`${etherscanBase}${txHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline text-blue-300"
+                >
+                  {txHash}
                 </a>
               </div>
             </div>
           )}
         </CardContent>
+
         <CardFooter>
           <Button
-            className="w-full bg-[#268bd2] text-[#fdf6e3] hover:bg-[#2aa198]"
+            className="w-full bg-blue-600 text-white hover:bg-blue-500"
             onClick={handleUpload}
             disabled={!file || isUploading || (isPaywalled && !price)}
           >
@@ -171,9 +203,12 @@ export default function UploadArticlePage() {
       {/* PDF Preview */}
       <div className="w-full flex-1">
         {fileUrl ? (
-          <iframe src={fileUrl} className="w-full h-[600px] border border-gray-300 rounded-md shadow" />
+          <iframe
+            src={fileUrl}
+            className="w-full h-[100%] border border-[#2c2c2c] rounded-md shadow bg-gray-900 "
+          />
         ) : (
-          <div className="w-full h-[600px] flex items-center justify-center text-gray-500 border border-dashed border-gray-300 rounded-md">
+          <div className="w-full h-[100%] flex items-center justify-center text-gray-500 border border-dashed border-[#2c2c2c] rounded-md bg-[#1f1f1f]">
             No PDF Selected
           </div>
         )}

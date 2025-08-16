@@ -12,7 +12,7 @@ export const publicClient = createPublicClient({
 }); 
 
 const articleRegistryConfig = {
-  address:  getAddress("0x177e9303dbcc55009a32e83f39dd981a51077d64"),
+  address:  getAddress("0x6f340420ac266c332cdda5c05ad5f75a10ed5e9a"),
   abi: abi,
 };
 

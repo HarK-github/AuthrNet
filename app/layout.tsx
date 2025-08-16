@@ -46,25 +46,13 @@ export default async function RootLayout({
    <span></span>
    <span></span>
    <span></span>
-   <span></span>
-   <span></span>
-   <span></span>
-   <span></span>
-   <span></span>
-   <span></span>
-   <span></span>
-   <span></span>
-   <span></span>
-   <span></span>
-   <span></span>
-   <span></span>
-   <span></span>
-</div>
-        <main className="p-15">
+</div >
+        <div className="pt-[100px] sticky" >
+ 
           <Provider initialState={initialState}>
          
             {children}</Provider>
-        </main>
+        </div >
       </body>
     </html>
   );

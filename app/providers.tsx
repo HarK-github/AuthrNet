@@ -3,7 +3,7 @@
 import { WagmiProvider } from "wagmi";
 import { config } from "./config";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Profile } from "./components/profile"; 
+
 import { WalletOptions } from "./components/wallet-options";
 import { useAccount } from "wagmi";
 import type { State } from "wagmi"; // Make sure this is imported
@@ -25,8 +25,7 @@ function WalletGate({
   return (
     <> 
     <TopNavbar />
-      {children}
-      <Profile />
+      {children} 
     </>
   );
 }

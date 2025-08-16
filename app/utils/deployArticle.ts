@@ -4,7 +4,7 @@ import { config } from "@/app/config";
 import { abi as AB } from "@/contracts/abis/ArticleRegistry.json";
 
 const articleRegistryConfig = {
-  address: '0x177e9303dbcc55009a32e83f39dd981a51077d64',
+  address: '0x6f340420ac266c332cdda5c05ad5f75a10ed5e9a',
   abi: AB,
 };
 

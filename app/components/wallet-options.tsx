@@ -16,14 +16,16 @@ export function WalletOptions() {
   const { connectors, connect, isLoading, pendingConnector } = useConnect()
 
   return (
-    <Card className="w-full max-w-sm mx-auto mt-10 bg-[#fdf6e3] border-[#93a1a1] text-[#002b36]">
+    <Card className="w-full max-w-sm mx-auto mt-10 bg-[#121212] border border-[#2c2c2c] text-gray-100 shadow-2xl rounded-2xl">
       <CardHeader>
-        <CardTitle className="text-[#073642]">Connect Your Wallet</CardTitle>
-        <CardDescription>
+        <CardTitle className="text-lg font-semibold text-gray-100">
+          Connect Your Wallet
+        </CardTitle>
+        <CardDescription className="text-gray-400">
           Choose a wallet to sign in and continue.
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col gap-4">
+      <CardContent className="flex flex-col gap-3">
         {connectors.map((connector) => (
           <WalletButton
             key={connector.uid}
@@ -33,7 +35,7 @@ export function WalletOptions() {
           />
         ))}
       </CardContent>
-      <CardFooter className="text-xs text-[#657b83]">
+      <CardFooter className="text-xs text-gray-500 border-t border-[#2c2c2c] pt-3">
         You must connect a wallet before publishing or reading paywalled content.
       </CardFooter>
     </Card>
@@ -62,7 +64,7 @@ function WalletButton({
     <Button
       onClick={onClick}
       disabled={!ready}
-      className="w-full text-[#002b36] bg-[#eee8d5] border border-[#93a1a1] hover:bg-[#e0dbcd]"
+      className="w-full justify-center py-2 px-4 rounded-xl bg-[#1f1f1f] border border-[#3c3c3c] text-gray-200 hover:bg-[#2a2a2a] hover:border-[#5c5c5c] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md"
     >
       {isPending ? `Connecting to ${connector.name}...` : `Connect with ${connector.name}`}
     </Button>

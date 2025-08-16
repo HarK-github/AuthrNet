@@ -190,7 +190,7 @@
     backface-visibility: hidden;
     position: absolute;
     animation: move;
-    animation-duration: 32;
+    animation-duration: 1;
     animation-timing-function: linear;
     animation-iteration-count: infinite;
 }
@@ -376,3 +376,19 @@
     transform-origin: 0vw 12vh;
     box-shadow: -40vmin 0 5.2101336095345285vmin currentColor;
 }
+
+
+/* HTML: <div class="loader"></div> */
+.loader {
+  width: 50px;
+  aspect-ratio: 1;
+  --_c:no-repeat radial-gradient(farthest-side,#25b09b 92%,#0000);
+  background: 
+    var(--_c) top,
+    var(--_c) left,
+    var(--_c) right,
+    var(--_c) bottom;
+  background-size: 12px 12px;
+  animation: l7 1s infinite;
+}
+@keyframes l7 {to{transform: rotate(.5turn)}}
