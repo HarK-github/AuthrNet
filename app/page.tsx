@@ -36,7 +36,7 @@ export default function HomePage() {
 
   const { address: userAddress, isConnected } = useAccount()
   const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS! // pass into each function
-
+  console.log(CONTRACT_ADDRESS);
   // Debounce effect
   useEffect(() => {
     const handler = setTimeout(() => {
