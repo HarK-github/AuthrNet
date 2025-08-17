@@ -40,44 +40,43 @@ export default function HomePage() {
     }, 300) // 300ms debounce
     return () => clearTimeout(handler)
   }, [searchTerm])
+const fetchArticles = useCallback(async () => {
+  if (!isConnected || !userAddress) return
+  setLoading(true)
 
-  const fetchArticles = async () => {
-    if (!isConnected || !userAddress) return
-    setLoading(true)
+  try {
+    const total = await getArticleCount()
+    const articlePromises = Array.from({ length: Number(total) }, async (_, i) => {
+      const { title, ipfsHash, price, publisher } = await getArticleDetails(i, userAddress)
+      const hasAccess = await checkArticleAccess(userAddress, i)
 
-    try {
-      const total = await getArticleCount()
-      const articles: Article[] = []
-
-    for (let i = 0; i < total; i++) {
-        const { title, ipfsHash, price, publisher} = await getArticleDetails(i, userAddress);
-
-        // format the bigint price into a string in ETH 
-        const hasAccess = await checkArticleAccess(userAddress, i)
-
-        articles.push({
-  id: i,
-  title,
-  ipfsHash,
-  price: formatEther(price),  // string like "0.1"
-  publisher,
-  hasAccess
-})
+      return {
+        id: i,
+        title,
+        ipfsHash,
+        price: formatEther(price),
+        publisher,
+        hasAccess,
       }
+    })
 
-      setPublicArticles(articles.filter(a => a.price === "0"))
-      setOwnedArticles(articles.filter(a => a.price !== "0" && a.hasAccess))
-      setLockedArticles(articles.filter(a => a.price !== "0" && !a.hasAccess))
-    } catch (err) {
-      console.error("Error fetching articles:", err)
-    } finally {
-      setLoading(false)
-    }
+    // ✅ parallel fetch instead of serial
+    const articles = await Promise.all(articlePromises)
+
+    setPublicArticles(articles.filter(a => a.price === "0"))
+    setOwnedArticles(articles.filter(a => a.price !== "0" && a.hasAccess))
+    setLockedArticles(articles.filter(a => a.price !== "0" && !a.hasAccess))
+  } catch (err) {
+    console.error("Error fetching articles:", err)
+  } finally {
+    setLoading(false)
   }
+}, [isConnected, userAddress])
+
 
   useEffect(() => {
     fetchArticles()
-  }, [isConnected, userAddress])
+  }, [fetchArticles])
 
   const handlePurchase = async (articleId: number, price: string) => {
     try {
