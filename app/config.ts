@@ -1,8 +1,6 @@
-import { sepolia } from 'wagmi/chains';
-import { http, createConfig, cookieStorage, createStorage } from 'wagmi';
-import { injected, metaMask, safe, walletConnect } from 'wagmi/connectors';
-
-const projectId = '<WALLETCONNECT_PROJECT_ID>';
+import { sepolia } from 'wagmi/chains'
+import { http, createConfig, cookieStorage, createStorage } from 'wagmi'
+import { injected, metaMask, safe } from 'wagmi/connectors' // 🚨 removed walletConnect
 
 export const config = createConfig({
   chains: [sepolia],
@@ -12,14 +10,13 @@ export const config = createConfig({
   }),
   connectors: [
     injected(),
-    walletConnect({ projectId }),
     metaMask(),
     safe(),
   ],
   transports: {
     [sepolia.id]: http(),
   },
-});
+})
 
 export function getConfig() {
   return createConfig({
@@ -31,5 +28,5 @@ export function getConfig() {
     transports: {
       [sepolia.id]: http(),
     },
-  });
+  })
 }
