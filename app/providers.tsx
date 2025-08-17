@@ -1,33 +1,40 @@
-"use client"
+"use client";
 
-import { WagmiProvider } from "wagmi";
+import * as React from "react";
+import { WagmiProvider, useAccount } from "wagmi";
 import { config } from "./config";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
 import { WalletOptions } from "./components/wallet-options";
-import { useAccount } from "wagmi";
-import type { State } from "wagmi"; // Make sure this is imported
 import { TopNavbar } from "./components/navbar_tp";
-import * as React from "react"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-import { Shield, BookOpen, Globe } from "lucide-react"
-
-
-import { ErrorBoundary } from 'react-error-boundary'
-
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Shield, BookOpen, Globe } from "lucide-react";
+import { ErrorBoundary, FallbackProps } from "react-error-boundary";
 
 const queryClient = new QueryClient();
+
+// ✅ Stable ErrorFallback component
+function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
+  return (
+    <div role="alert" className="p-6 bg-red-900/40 text-red-200 rounded-lg">
+      <p className="font-semibold">Something went wrong:</p>
+      <pre className="text-sm">{error.message}</pre>
+      <button
+        className="mt-2 px-3 py-1 bg-red-700 rounded"
+        onClick={resetErrorBoundary}
+      >
+        Try again
+      </button>
+    </div>
+  );
+}
+
 function WalletGate({ children }: { children: React.ReactNode }) {
   const { isConnected } = useAccount();
-  function ErrorFallback({ error, resetErrorBoundary }) {
-  return (
-    <div role="alert">
-      <p>Something went wrong:</p>
-      <pre>{error.message}</pre>
-      <button onClick={resetErrorBoundary}>Try again</button>
-    </div>
-  )
-}
+  const [mounted, setMounted] = React.useState(false);
+
+  // ✅ Avoid hydration mismatch
+  React.useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
 
   if (!isConnected) {
     return (
@@ -36,11 +43,9 @@ function WalletGate({ children }: { children: React.ReactNode }) {
 
         {/* Hero Section */}
         <section className="flex flex-col lg:flex-row items-center justify-between px-10 py-20 gap-12">
-          {/* Left: Description */}
           <div className="max-w-2xl">
             <h1 className="text-5xl font-bold leading-tight mb-6">
-              Welcome to{" "}
-              <span className="text-blue-400">DecentraArticles</span>
+              Welcome to <span className="text-blue-400">DecentraArticles</span>
             </h1>
             <p className="text-lg text-gray-300 mb-8">
               A decentralized publishing hub where{" "}
@@ -54,7 +59,6 @@ function WalletGate({ children }: { children: React.ReactNode }) {
             </p>
           </div>
 
-          {/* Right: Wallet Connect */}
           <div className="w-full max-w-md bg-[#111827] p-6 rounded-xl border border-[#1e3a8a] shadow-lg shadow-blue-900/40">
             <h2 className="text-xl font-semibold mb-4 text-blue-300">
               Get Started
@@ -104,26 +108,25 @@ function WalletGate({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <ErrorBoundary FallbackComponent={ErrorFallback}>
-        <TopNavbar />
+      <TopNavbar />
       {children}
-      </ErrorBoundary>
     </>
   );
 }
-
 
 export default function Provider({
   children,
   initialState,
 }: Readonly<{
   children: React.ReactNode;
-  initialState: State | undefined;
+  initialState: import("wagmi").State | undefined;
 }>) {
   return (
     <WagmiProvider config={config} initialState={initialState}>
       <QueryClientProvider client={queryClient}>
-        <WalletGate>{children}</WalletGate>
+        <ErrorBoundary FallbackComponent={ErrorFallback}>
+          <WalletGate>{children}</WalletGate>
+        </ErrorBoundary>
       </QueryClientProvider>
     </WagmiProvider>
   );
