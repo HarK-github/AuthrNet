@@ -21,6 +21,8 @@ type Article = {
 }
 
 export default function HomePage() {
+  console.log("Contract Address:", process.env.NEXT_PUBLIC_CONTRACT_ADDRESS)
+
   const [publicArticles, setPublicArticles] = useState<Article[]>([])
   const [ownedArticles, setOwnedArticles] = useState<Article[]>([])
   const [lockedArticles, setLockedArticles] = useState<Article[]>([])
