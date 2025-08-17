@@ -4,7 +4,10 @@ import { config } from "@/app/config";
 import { abi } from "@/contracts/abis/ArticleRegistry.json";
 import { publishingHubConfig } from "./contractHelpers";
 import { sepolia } from "viem/chains";
- 
+
+export const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!;
+export const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL!;
+
 
 export const publicClient = createPublicClient({
   chain: sepolia,
