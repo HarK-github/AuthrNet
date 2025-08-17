@@ -13,10 +13,21 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Shield, BookOpen, Globe } from "lucide-react"
 
 
-const queryClient = new QueryClient();
+import { ErrorBoundary } from 'react-error-boundary'
 
+
+const queryClient = new QueryClient();
 function WalletGate({ children }: { children: React.ReactNode }) {
   const { isConnected } = useAccount();
+  function ErrorFallback({ error, resetErrorBoundary }) {
+  return (
+    <div role="alert">
+      <p>Something went wrong:</p>
+      <pre>{error.message}</pre>
+      <button onClick={resetErrorBoundary}>Try again</button>
+    </div>
+  )
+}
 
   if (!isConnected) {
     return (
@@ -93,8 +104,10 @@ function WalletGate({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <TopNavbar />
+      <ErrorBoundary FallbackComponent={ErrorFallback}>
+        <TopNavbar />
       {children}
+      </ErrorBoundary>
     </>
   );
 }

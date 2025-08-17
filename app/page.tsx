@@ -11,6 +11,9 @@ import { getArticleCount, getArticleDetails, checkArticleAccess, purchaseAccess 
 import { useRouter } from "next/navigation"
 import { SearchIcon } from "lucide-react"
 
+
+
+
 type Article = {
   id: number
   title: string
@@ -20,8 +23,7 @@ type Article = {
   hasAccess: boolean
 }
 
-export default function HomePage() {
-  console.log("Contract Address:", process.env.NEXT_PUBLIC_CONTRACT_ADDRESS)
+export default function HomePage() { 
 
   const [publicArticles, setPublicArticles] = useState<Article[]>([])
   const [ownedArticles, setOwnedArticles] = useState<Article[]>([])
