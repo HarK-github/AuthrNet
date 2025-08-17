@@ -11,16 +11,23 @@ export default function ReadPage() {
   const [iframeSrc, setIframeSrc] = useState("")
   const [loading, setLoading] = useState(true)
 
+  // ✅ Pull contract + RPC values from NEXT_PUBLIC_ env at runtime
+  const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as `0x${string}`
+  
   useEffect(() => {
     if (!id || !address) return
     ;(async () => {
       try {
         setLoading(true)
 
-        // Get article details from blockchain
-        const {price,publisher,title,ipfsHash} = await getArticleDetails(Number(id), address)
+        // Pass contract & RPC explicitly
+        const { ipfsHash } = await getArticleDetails(
+          Number(id),
+          address,
+          contractAddress, 
+        )
 
-        // Just build iframe URL (Pinata, Cloudflare, ipfs.io, etc.)
+        // Choose any gateway you prefer (Pinata here)
         setIframeSrc(`https://gateway.pinata.cloud/ipfs/${ipfsHash}`)
       } catch (err) {
         console.error("Error loading article:", err)
@@ -28,7 +35,7 @@ export default function ReadPage() {
         setLoading(false)
       }
     })()
-  }, [id, address])
+  }, [id, address, contractAddress])
 
   if (loading) {
     return (

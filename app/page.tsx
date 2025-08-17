@@ -7,12 +7,14 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input"
 import { formatEther } from "viem"
 import { useAccount } from "wagmi"
-import { getArticleCount, getArticleDetails, checkArticleAccess, purchaseAccess } from "@/app/utils/readArticle"
+import {
+  getArticleCount,
+  getArticleDetails,
+  checkArticleAccess,
+  purchaseAccess,
+} from "@/app/utils/readArticle"
 import { useRouter } from "next/navigation"
 import { SearchIcon } from "lucide-react"
-
-
-
 
 type Article = {
   id: number
@@ -23,8 +25,7 @@ type Article = {
   hasAccess: boolean
 }
 
-export default function HomePage() { 
-
+export default function HomePage() {
   const [publicArticles, setPublicArticles] = useState<Article[]>([])
   const [ownedArticles, setOwnedArticles] = useState<Article[]>([])
   const [lockedArticles, setLockedArticles] = useState<Article[]>([])
@@ -34,47 +35,52 @@ export default function HomePage() {
   const [debouncedSearch, setDebouncedSearch] = useState("")
 
   const { address: userAddress, isConnected } = useAccount()
+  const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS! // pass into each function
 
   // Debounce effect
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchTerm)
-    }, 300) // 300ms debounce
+    }, 300)
     return () => clearTimeout(handler)
   }, [searchTerm])
-const fetchArticles = useCallback(async () => {
-  if (!isConnected || !userAddress) return
-  setLoading(true)
 
-  try {
-    const total = await getArticleCount()
-    const articlePromises = Array.from({ length: Number(total) }, async (_, i) => {
-      const { title, ipfsHash, price, publisher } = await getArticleDetails(i, userAddress)
-      const hasAccess = await checkArticleAccess(userAddress, i)
+  const fetchArticles = useCallback(async () => {
+    if (!isConnected || !userAddress) return
+    setLoading(true)
 
-      return {
-        id: i,
-        title,
-        ipfsHash,
-        price: formatEther(price),
-        publisher,
-        hasAccess,
-      }
-    })
+    try {
+      const total = await getArticleCount(CONTRACT_ADDRESS)
 
-    // ✅ parallel fetch instead of serial
-    const articles = await Promise.all(articlePromises)
+      const articlePromises = Array.from({ length: Number(total) }, async (_, i) => {
+        const { title, ipfsHash, price, publisher } = await getArticleDetails(
+          i,
+          userAddress,
+          CONTRACT_ADDRESS
+        )
+        const hasAccess = await checkArticleAccess(userAddress, i, CONTRACT_ADDRESS)
 
-    setPublicArticles(articles.filter(a => a.price === "0"))
-    setOwnedArticles(articles.filter(a => a.price !== "0" && a.hasAccess))
-    setLockedArticles(articles.filter(a => a.price !== "0" && !a.hasAccess))
-  } catch (err) {
-    console.error("Error fetching articles:", err)
-  } finally {
-    setLoading(false)
-  }
-}, [isConnected, userAddress])
+        return {
+          id: i,
+          title,
+          ipfsHash,
+          price: formatEther(price),
+          publisher,
+          hasAccess,
+        }
+      })
 
+      const articles = await Promise.all(articlePromises)
+
+      setPublicArticles(articles.filter(a => a.price === "0"))
+      setOwnedArticles(articles.filter(a => a.price !== "0" && a.hasAccess))
+      setLockedArticles(articles.filter(a => a.price !== "0" && !a.hasAccess))
+    } catch (err) {
+      console.error("Error fetching articles:", err)
+    } finally {
+      setLoading(false)
+    }
+  }, [isConnected, userAddress, CONTRACT_ADDRESS])
 
   useEffect(() => {
     fetchArticles()
@@ -83,8 +89,8 @@ const fetchArticles = useCallback(async () => {
   const handlePurchase = async (articleId: number, price: string) => {
     try {
       setPurchasingId(articleId)
-      await purchaseAccess(articleId, price)
-      await fetchArticles() // Refresh after purchase
+      await purchaseAccess(articleId, price, CONTRACT_ADDRESS)
+      await fetchArticles()
     } catch (err) {
       console.error("Purchase failed:", err)
     } finally {
@@ -92,7 +98,6 @@ const fetchArticles = useCallback(async () => {
     }
   }
 
-  // Filter function (memoized for performance)
   const filterBySearch = useMemo(() => {
     return (articles: Article[]) =>
       articles.filter(
@@ -109,7 +114,7 @@ const fetchArticles = useCallback(async () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <div className = "loader"></div>
+        <div className="loader"></div>
       </div>
     )
   }
@@ -137,21 +142,18 @@ const fetchArticles = useCallback(async () => {
 
       {/* Article Sections */}
       <div className="space-y-12">
-        {/* Public Articles */}
-        <Section title="Public Articles" >
+        <Section title="Public Articles">
           {filterBySearch(publicArticles).map(article => (
             <ArticleCard key={article.id} article={article} preview />
           ))}
         </Section>
 
-        {/* Your Purchased Articles */}
         <Section title="Your Purchased Articles">
           {filterBySearch(ownedArticles).map(article => (
             <ArticleCard key={article.id} article={article} preview />
           ))}
         </Section>
 
-        {/* Premium Articles */}
         <Section title="Premium Articles">
           {filterBySearch(lockedArticles).map(article => (
             <ArticleCard
@@ -167,11 +169,11 @@ const fetchArticles = useCallback(async () => {
     </div>
   )
 }
- 
+
 /* Section Component */
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-gray-950 p-4 rounded-2xl  mb-8">
+    <div className="bg-gray-950 p-4 rounded-2xl mb-8">
       <h2 className="text-lg font-semibold mb-3">{title}</h2>
       <div className="grid gap-4 grid-cols-[repeat(auto-fill,minmax(260px,1fr))]">
         {React.Children.count(children) > 0 ? children : (
@@ -181,7 +183,6 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     </div>
   )
 }
-
 
 /* Article Card Component */
 function ArticleCard({
@@ -197,79 +198,75 @@ function ArticleCard({
   onPurchase?: (id: number, price: string) => void;
   purchasing?: boolean;
 }) {
-  const [iframeKey, setIframeKey] = useState(0);
-  const reloadIframe = () => setIframeKey((prev) => prev + 1);
-  const router = useRouter();
+  const [iframeKey, setIframeKey] = useState(0)
+  const reloadIframe = () => setIframeKey((prev) => prev + 1)
+  const router = useRouter()
+
   return (
-   <Card className="bg-gray-980 text-white border border-gray-200 rounded-lg shadow-sm">
-  <CardHeader>
-    <CardTitle className="text-lg font-semibold truncate">{article.title}</CardTitle>
-    <CardDescription className="text-xs text-gray-400 truncate">
-      IPFS: {article.ipfsHash}
-    </CardDescription>
-  </CardHeader>
+    <Card className="bg-gray-980 text-white border border-gray-200 rounded-lg shadow-sm">
+      <CardHeader>
+        <CardTitle className="text-lg font-semibold truncate">{article.title}</CardTitle>
+        <CardDescription className="text-xs text-gray-400 truncate">
+          IPFS: {article.ipfsHash}
+        </CardDescription>
+      </CardHeader>
 
-  <CardContent>
-    {/* Preview Iframe */}
-    {preview && !locked && (
-      <div className="relative">
-        <iframe
-          key={iframeKey}
-          src={`https://sapphire-known-flea-63.mypinata.cloud/ipfs/${article.ipfsHash}`}
-          className="w-full h-40 border border-gray-200 rounded-md"
-        />
-        <Button
-          size="sm"
-          variant="outline"
-          className="absolute top-2 right-2"
-          onClick={reloadIframe}
-        >
-          Reload
-        </Button>
-      </div>
-    )}
+      <CardContent>
+        {preview && !locked && (
+          <div className="relative">
+            <iframe
+              key={iframeKey}
+              src={`https://sapphire-known-flea-63.mypinata.cloud/ipfs/${article.ipfsHash}`}
+              className="w-full h-40 border border-gray-200 rounded-md"
+            />
+            <Button
+              size="sm"
+              variant="outline"
+              className="absolute top-2 right-2"
+              onClick={reloadIframe}
+            >
+              Reload
+            </Button>
+          </div>
+        )}
 
-    {/* Locked Overlay */}
-    {locked && (
-      <div className="w-full h-40 flex items-center justify-center bg-gray-100 text-gray-500 rounded-md text-sm">
-        Premium – Unlock to read
-      </div>
-    )}
+        {locked && (
+          <div className="w-full h-40 flex items-center justify-center bg-gray-100 text-gray-500 rounded-md text-sm">
+            Premium – Unlock to read
+          </div>
+        )}
 
-    {/* Author */}
-    <div className="mt-4 flex items-center space-x-3 text-sm">
-      <Avatar className="h-8 w-8">
-        <AvatarFallback>
-          {article.publisher.slice(2, 4).toUpperCase()}
-        </AvatarFallback>
-      </Avatar>
-      <div className="min-w-0">
-        <p className="font-medium truncate">{article.publisher}</p>
-        <p className="text-gray-500">On-chain</p>
-      </div>
-    </div>
-  </CardContent>
+        <div className="mt-4 flex items-center space-x-3 text-sm">
+          <Avatar className="h-8 w-8">
+            <AvatarFallback>
+              {article.publisher.slice(2, 4).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <div className="min-w-0">
+            <p className="font-medium truncate">{article.publisher}</p>
+            <p className="text-gray-500">On-chain</p>
+          </div>
+        </div>
+      </CardContent>
 
-  {/* Footer */}
-  <CardFooter>
-    {!locked ? (
-      <Button
-        onClick={() => router.push(`/read/${article.id}`)}
-        className="w-full"
-      >
-        Read Full
-      </Button>
-    ) : (
-      <Button
-        onClick={() => onPurchase?.(article.id, article.price)}
-        disabled={purchasing}
-        className="w-full"
-      >
-        {purchasing ? "Processing..." : `Unlock for ${article.price} ETH`}
-      </Button>
-    )}
-  </CardFooter>
-</Card>
-
-  );
+      <CardFooter>
+        {!locked ? (
+          <Button
+            onClick={() => router.push(`/read/${article.id}`)}
+            className="w-full"
+          >
+            Read Full
+          </Button>
+        ) : (
+          <Button
+            onClick={() => onPurchase?.(article.id, article.price)}
+            disabled={purchasing}
+            className="w-full"
+          >
+            {purchasing ? "Processing..." : `Unlock for ${article.price} ETH`}
+          </Button>
+        )}
+      </CardFooter>
+    </Card>
+  )
 }

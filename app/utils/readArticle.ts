@@ -1,29 +1,15 @@
 import { readContract, writeContract, waitForTransactionReceipt } from "wagmi/actions";
-import { createPublicClient, getAddress, http, parseEther } from "viem";
+import { getAddress, parseEther } from "viem";
 import { config } from "@/app/config";
 import { abi } from "@/contracts/abis/ArticleRegistry.json";
 import { publishingHubConfig } from "./contractHelpers";
-import { sepolia } from "viem/chains";
-
-export const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!;
-export const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL!;
-
-
-export const publicClient = createPublicClient({
-  chain: sepolia,
-  transport: http(),
-}); 
-const articleRegistryConfig = { 
-  address:  getAddress(process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as string),
-  abi: abi,
-};
 
 // Type definitions
 interface Article {
   title: string;
   ipfsHash: string;
   price: bigint;
-  publisher: string; 
+  publisher: string;
 }
 
 interface ArticleList {
@@ -34,14 +20,15 @@ interface ArticleList {
   publishers: string[];
   existsFlags: boolean[];
 }
-export async function getArticleCount() {
+
+export async function getArticleCount(contractAddress: string) {
   try {
-    const count = await readContract(config,{
-      address: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as `0x${string}`,
+    const count = await readContract(config, {
+      address: getAddress(contractAddress),
       abi: publishingHubConfig.abi,
       functionName: "articleCount",
-    }); 
-    return Number(count); // count will be bigint
+    });
+    return Number(count);
   } catch (error) {
     console.error("Error reading articleCount:", error);
     throw error;
@@ -50,63 +37,72 @@ export async function getArticleCount() {
 
 export async function getArticleDetails(
   articleId: number,
-  userAddress: string
+  userAddress: string,
+  contractAddress: string
 ): Promise<Article> {
-  const [title, ipfsHash, price, publisher] = await readContract(config, {
-    ...articleRegistryConfig,
+  const [title, ipfsHash, price, publisher] = (await readContract(config, {
+    address: getAddress(contractAddress),
+    abi,
     functionName: "getArticle",
     args: [articleId, userAddress],
-  }) as [string, string, bigint, string];
+  })) as [string, string, bigint, string];
 
   return { title, ipfsHash, price, publisher };
 }
 
-
 export async function getAllArticles(
-  userAddress: string
+  userAddress: string,
+  contractAddress: string
 ): Promise<ArticleList> {
-  return await readContract(config, {
-    ...articleRegistryConfig,
+  return (await readContract(config, {
+    address: getAddress(contractAddress),
+    abi,
     functionName: "getArticle",
     args: [userAddress],
-  }) as Promise<ArticleList>;
+  })) as ArticleList;
 }
 
 export async function checkArticleAccess(
-  userAddress: string, 
-  articleId: number
+  userAddress: string,
+  articleId: number,
+  contractAddress: string
 ): Promise<boolean> {
-  return await readContract(config, {
-    ...articleRegistryConfig,
+  return (await readContract(config, {
+    address: getAddress(contractAddress),
+    abi,
     functionName: "checkAccess",
     args: [userAddress, articleId],
-  }) as Promise<boolean>;
+  })) as boolean;
 }
 
 // Write functions
 export async function publishArticle(
   title: string,
   ipfsHash: string,
-  priceInEth: string
+  priceInEth: string,
+  contractAddress: string
 ): Promise<{ articleId: number; txHash: string }> {
   const txHash = await writeContract(config, {
-    ...articleRegistryConfig,
+    address: getAddress(contractAddress),
+    abi,
     functionName: "publishArticle",
     args: [title, ipfsHash, parseEther(priceInEth)],
   });
 
   await waitForTransactionReceipt(config, { hash: txHash });
-  
-  const count = await getArticleCount();
+
+  const count = await getArticleCount(contractAddress);
   return { articleId: count - 1, txHash };
 }
 
 export async function grantAccess(
   userAddress: string,
-  articleId: number
+  articleId: number,
+  contractAddress: string
 ): Promise<{ txHash: string }> {
   const txHash = await writeContract(config, {
-    ...articleRegistryConfig,
+    address: getAddress(contractAddress),
+    abi,
     functionName: "grantAccess",
     args: [userAddress, articleId],
   });
@@ -117,10 +113,12 @@ export async function grantAccess(
 
 export async function purchaseAccess(
   articleId: number,
-  priceInEth: string
+  priceInEth: string,
+  contractAddress: string
 ): Promise<{ txHash: string }> {
   const txHash = await writeContract(config, {
-    ...articleRegistryConfig,
+    address: getAddress(contractAddress),
+    abi,
     functionName: "purchaseAccess",
     args: [articleId],
     value: parseEther(priceInEth),
