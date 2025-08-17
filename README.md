@@ -4,12 +4,14 @@
 # AuthrNet
 
 **Decentralized Article Publishing & Access Control Platform**
+<br>
 
-[![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)](https://nextjs.org/)  
-[![Ethereum](https://img.shields.io/badge/Ethereum-Smart%20Contracts-3C3C3D?logo=ethereum)](https://ethereum.org/)  
-[![IPFS](https://img.shields.io/badge/IPFS-Pinata-65C2CB?logo=ipfs)](https://ipfs.tech/)  
-[![Deployment](https://img.shields.io/badge/Deployed-✓-brightgreen)](#)  
-[![Progress](https://img.shields.io/badge/Status-In%20Progress-yellow)](#)  
+**https://authr-net.vercel.app/**
+
+<br>
+
+[![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)](https://nextjs.org/) [![Ethereum](https://img.shields.io/badge/Ethereum-Smart%20Contracts-3C3C3D?logo=ethereum)](https://ethereum.org/)  [![IPFS](https://img.shields.io/badge/IPFS-Pinata-65C2CB?logo=ipfs)](https://ipfs.tech/)  [![Deployment](https://img.shields.io/badge/Deployed-✓-brightgreen)](#)  
+[![Progress](https://img.shields.io/badge/Status-completed-green)](#)  
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 </div>
@@ -32,18 +34,18 @@
 
 ---
 
-## ✨ Features
+##  Features
 
 - Web3 authentication with **Wagmi** and **MetaMask**
 - Article publishing with **IPFS (Pinata)**
-- Premium access with **ETH-based unlocking**
+- Premium access with **Wallet-based unlocking**
 - Profile & dashboard for authored and purchased articles
-- Modern UI with **dark theme** & responsive design
-- Solidity-powered **ArticleRegistry Smart Contract**
+- Modern UI & responsive design
+- Solidity-powered **smart Contract**
 
 ---
 
-## 🛠 Tech Stack
+##  Tech Stack
 
 - **Frontend**: Next.js 14, TypeScript, TailwindCSS, ShadCN UI
 - **Blockchain**: Solidity, Wagmi, viem
@@ -52,7 +54,7 @@
 
 ---
 
-## ⚡ Installation
+##  Installation
 
 ### 1. Clone & Install
 
@@ -62,8 +64,7 @@ cd authrnet
 
 # Install dependencies
 npm install
-```
-````
+``` 
 
 ### 2. Configure Environment
 
@@ -148,10 +149,21 @@ contracts/
     ├── ArticleRegistry.json     # ABI
     └── ArticleRegistry.sol      # Solidity source
 ```
-
+| **Function / Feature** | **Description**                                                          | **Access / Notes**                                                        |
+| ---------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------- |
+| `publishArticle`       | Publishes a new article with title, IPFS hash, and price.                | Any user can call. Publisher gets automatic access.                       |
+| `grantAccess`          | Grants access to a specific user for an article.                         | Only contract owner or article publisher. Emits `AccessGranted`.          |
+| `purchaseAccess`       | Allows users to pay for access to a paywalled article.                   | Any user can call. Funds are sent to publisher. Emits `ArticlePurchased`. |
+| `checkAccess`          | Checks if a user has access to a given article.                          | Public view function.                                                     |
+| `getArticle`           | Returns article metadata and IPFS hash (if user has access).             | Access-controlled. Returns empty IPFS hash if no permission.              |
+| `getArticles`          | Returns arrays of all articles, with IPFS hashes filtered by access.     | Public view function. Useful for frontends to list articles.              |
+| `transferOwnership`    | Transfers contract ownership to a new address.                           | Only contract owner.                                                      |
+| `Events`               | `ArticlePublished`, `AccessGranted`, `ArticlePurchased`                  | For frontend notifications and tracking actions on-chain.          |
+| `State Variables`      | `owner`, `contractName`, `articles`, `accessPermissions`, `articleCount` | Track ownership, article data, permissions, and IDs.                      |
+ 
 ---
 
-## 🚀 Usage
+##  Usage
 
 1. Connect wallet (MetaMask).
 2. Browse free articles.
@@ -198,5 +210,4 @@ Licensed under the **MIT License**.
 [⬆ Back to Top](#-authrnet)
 
 ```
-
-```
+ 
