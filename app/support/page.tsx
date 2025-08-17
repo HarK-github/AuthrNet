@@ -37,9 +37,9 @@ export default function SupportAuthorsPage() {
     setTxHash(null);
 
     try {
-      const { txHash } = await supportAuthor(selectedAuthor, amount);
-      setProgress(100);
-      setTxHash(txHash);
+      const txHash = await supportAuthor(selectedAuthor, amount);
+  setProgress(100);
+  setTxHash(txHash); 
     } catch (err) {
       console.error("Support failed:", err);
       setProgress(0);

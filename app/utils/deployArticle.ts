@@ -3,10 +3,12 @@ import { parseEther } from "viem";
 import { config } from "@/app/config";
 import { abi as AB } from "@/contracts/abis/ArticleRegistry.json";
 
-const articleRegistryConfig = {
-  address: '0x6f340420ac266c332cdda5c05ad5f75a10ed5e9a',
-  abi: AB,
-};
+// -------------------- Helper --------------------
+function getContract() {
+  const addr = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as `0x${string}` | undefined;
+  if (!addr) throw new Error("❌ NEXT_PUBLIC_CONTRACT_ADDRESS is not set");
+  return { address: addr, abi: AB };
+}
 
 // -------------------- Publish a new article --------------------
 export async function publishArticle(
@@ -16,101 +18,81 @@ export async function publishArticle(
 ): Promise<{ articleId: number; txHash: string }> {
   try {
     const txHash = await writeContract(config, {
-      ...articleRegistryConfig,
+      ...getContract(),
       functionName: "publishArticle",
       args: [title, ipfsHash, parseEther(priceInEth)],
     });
 
     await waitForTransactionReceipt(config, { hash: txHash });
 
-    // articleCount returns the total number of articles; the latest ID is count - 1
-    const articleId = Number(await readContract(config, {
-      ...articleRegistryConfig,
+    const articleCount = await readContract(config, {
+      ...getContract(),
       functionName: "articleCount",
-    })) - 1;
+    });
 
-    return { articleId, txHash };
+    return { articleId: Number(articleCount) - 1, txHash };
   } catch (error) {
     console.error("Error publishing article:", error);
     throw error;
   }
 }
 
-// -------------------- Grant access to an article --------------------
-export async function grantArticleAccess(
-  userAddress: string,
-  articleId: number
-): Promise<{ txHash: string }> {
-  try {
-    const txHash = await writeContract(config, {
-      ...articleRegistryConfig,
-      functionName: "grantAccess",
-      args: [userAddress, articleId],
-    });
+// -------------------- Grant access --------------------
+export async function grantArticleAccess(userAddress: string, articleId: number) {
+  const txHash = await writeContract(config, {
+    ...getContract(),
+    functionName: "grantAccess",
+    args: [userAddress, articleId],
+  });
 
-    await waitForTransactionReceipt(config, { hash: txHash });
-    return { txHash };
-  } catch (error) {
-    console.error("Error granting access:", error);
-    throw error;
-  }
+  await waitForTransactionReceipt(config, { hash: txHash });
+  return { txHash };
 }
 
-// -------------------- Purchase access to an article --------------------
-export async function purchaseArticleAccess(
-  articleId: number,
-  priceInEth: string
-): Promise<{ txHash: string }> {
-  try {
-    const txHash = await writeContract(config, {
-      ...articleRegistryConfig,
-      functionName: "purchaseAccess",
-      args: [articleId],
-      value: parseEther(priceInEth),
-    });
+// -------------------- Purchase access --------------------
+export async function purchaseArticleAccess(articleId: number, priceInEth: string) {
+  const txHash = await writeContract(config, {
+    ...getContract(),
+    functionName: "purchaseAccess",
+    args: [articleId],
+    value: parseEther(priceInEth),
+  });
 
-    await waitForTransactionReceipt(config, { hash: txHash });
-    return { txHash };
-  } catch (error) {
-    console.error("Error purchasing access:", error);
-    throw error;
-  }
+  await waitForTransactionReceipt(config, { hash: txHash });
+  return { txHash };
 }
 
 // -------------------- Get article details --------------------
 export async function getArticleDetails(articleId: number) {
   return readContract(config, {
-    ...articleRegistryConfig,
+    ...getContract(),
     functionName: "getArticle",
     args: [articleId],
   });
 }
 
-// -------------------- Check if a user has access --------------------
-export async function checkArticleAccess(
-  userAddress: string,
-  articleId: number
-): Promise<boolean> {
-  return readContract(config, {
-    ...articleRegistryConfig,
+// -------------------- Check access --------------------
+export async function checkArticleAccess(userAddress: string, articleId: number): Promise<boolean> {
+  return (await readContract(config, {
+    ...getContract(),
     functionName: "checkAccess",
     args: [userAddress, articleId],
-  });
+  })) as boolean;
 }
 
 // -------------------- Get all articles --------------------
 export async function getAllArticles() {
   return readContract(config, {
-    ...articleRegistryConfig,
+    ...getContract(),
     functionName: "getArticles",
-    args: [/* pass user address if needed, or use zero address */ "0x0000000000000000000000000000000000000000"],
+    args: ["0x0000000000000000000000000000000000000000"],
   });
 }
 
-// -------------------- Get contract owner --------------------
+// -------------------- Get owner --------------------
 export async function getContractOwner(): Promise<string> {
-  return readContract(config, {
-    ...articleRegistryConfig,
+  return (await readContract(config, {
+    ...getContract(),
     functionName: "owner",
-  });
+  })) as string;
 }

@@ -18,7 +18,7 @@ export default function ReadPage() {
         setLoading(true)
 
         // Get article details from blockchain
-        const [, ipfsHash] = await getArticleDetails(Number(id), address)
+        const {price,publisher,title,ipfsHash} = await getArticleDetails(Number(id), address)
 
         // Just build iframe URL (Pinata, Cloudflare, ipfs.io, etc.)
         setIframeSrc(`https://gateway.pinata.cloud/ipfs/${ipfsHash}`)

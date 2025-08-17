@@ -1,10 +1,10 @@
-import { Address } from 'wagmi';
+import type { Address } from "viem";
 import {abi as ArticleRegistryABI} from '@/contracts/abis/ArticleRegistry.json';
 import { sepolia } from 'wagmi/chains';
 import { getPublicClient, getWalletClient } from '@wagmi/core';
 import { config } from '@/app/config';
 
-const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || "0x6f340420ac266c332cdda5c05ad5f75a10ed5e9a";
+const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ;
 
 // ---------------------
 // Types
@@ -37,17 +37,17 @@ function getWallet() {
 // ---------------------
 // Fetch All Authors
 // ---------------------
-export async function fetchAllAuthors(): Promise<Author[]> {
+export async function fetchAllAuthors(): Promise<Author[]> { 
   try {
     const client = getClient();
+
     const result = await client.readContract({
       address: CONTRACT_ADDRESS as Address,
       abi: ArticleRegistryABI,
-      functionName: 'getAllAuthors',
-    });
+      functionName: "getAllAuthors",
+    }) as [string[], bigint[]];  // <-- explicitly typed
 
-    const authors: string[] = result[0];
-    const counts: bigint[] = result[1];
+    const [authors, counts] = result;
 
     if (!authors || !counts) return [];
 
@@ -60,6 +60,7 @@ export async function fetchAllAuthors(): Promise<Author[]> {
     return [];
   }
 }
+
 
 // ---------------------
 // Fetch Articles
@@ -100,23 +101,25 @@ export async function fetchArticles(userAddress: string): Promise<Article[]> {
 // ---------------------
 // Support an Author
 // ---------------------
-export async function supportAuthor(authorAddress: string, amountEth: string) {
+export async function supportAuthor(authorAddress: string, amountEth: string): Promise<string> {
   try {
     const walletClient = await getWallet();
-    const tx = await walletClient.writeContract({
+    const txHash = await walletClient.writeContract({
       address: CONTRACT_ADDRESS as Address,
       abi: ArticleRegistryABI,
       functionName: 'supportAuthor',
       args: [authorAddress as Address],
       value: BigInt(Math.floor(parseFloat(amountEth) * 1e18)),
     });
-    await walletClient.waitForTransactionReceipt({ hash: tx });
-    return tx;
+    const publicClient = getClient();
+    await publicClient.waitForTransactionReceipt({ hash: txHash });
+    return txHash; // return string
   } catch (err) {
     console.error("Support transaction failed:", err);
     throw err;
   }
 }
+
 
 // ---------------------
 // Purchase Article Access
@@ -124,15 +127,16 @@ export async function supportAuthor(authorAddress: string, amountEth: string) {
 export async function purchaseArticle(articleId: number, amountEth: string) {
   try {
     const walletClient = await getWallet();
-    const tx = await walletClient.writeContract({
+    const txHash = await walletClient.writeContract({
       address: CONTRACT_ADDRESS as Address,
       abi: ArticleRegistryABI,
       functionName: 'purchaseAccess',
       args: [BigInt(articleId)],
       value: BigInt(Math.floor(parseFloat(amountEth) * 1e18)),
     });
-    await walletClient.waitForTransactionReceipt({ hash: tx });
-    return tx;
+      const publicClient = getClient();
+    await publicClient.waitForTransactionReceipt({ hash: txHash });
+    return txHash;
   } catch (err) {
     console.error("Purchase transaction failed:", err);
     throw err;

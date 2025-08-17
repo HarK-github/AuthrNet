@@ -1,14 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import Link from "next/link";
+import "./globals.css"; 
 import { headers } from 'next/headers';
 import { cookieToInitialState } from 'wagmi';
 import Provider from "./providers"; 
 import { config,getConfig } from "./config";
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { WagmiProvider } from 'wagmi';
-import { TopNavbar } from "./components/navbar_tp";
+ 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -38,8 +35,8 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-900 text-gray-100`}>
-    <div className="background fixed top-0 left-0 w-full h-full -z-10 overflow-hidden">   <span></span>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-950 text-gray-100`}>
+    <div className="bg-[#121212]">   <span></span>
    <span></span>
    <span></span>
    <span></span>

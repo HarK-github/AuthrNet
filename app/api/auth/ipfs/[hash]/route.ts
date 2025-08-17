@@ -1,11 +1,13 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 
-export async function GET(req: Request, { params }: { params: { hash: string } }) {
-  const { hash } = params
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ hash: string }>}
+) {
+  const { hash } = await params
 
   try {
-    // Pick your preferred IPFS gateway
-    const gatewayUrl = `https://sapphire-known-flea-63.mypinata.cloud/ipfs/{hash}`
+    const gatewayUrl = `https://sapphire-known-flea-63.mypinata.cloud/ipfs/${hash}`
 
     const res = await fetch(gatewayUrl)
     if (!res.ok) {
@@ -17,7 +19,7 @@ export async function GET(req: Request, { params }: { params: { hash: string } }
     return new NextResponse(text, {
       status: 200,
       headers: {
-        "Content-Type": "text/plain", // keep raw markdown
+        "Content-Type": "text/plain",
         "Access-Control-Allow-Origin": "*",
       },
     })

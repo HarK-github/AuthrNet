@@ -48,7 +48,7 @@ export function TopNavbar() {
             </div>
             <button
               onClick={() => disconnect()}
-              className="text-sm bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+              className="text-sm bg-red-500 hover:bg-red-600 hover:scale-110 text-white px-3 py-1 rounded"
             >
               Disconnect
             </button>

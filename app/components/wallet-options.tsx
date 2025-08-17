@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button"
 
 export function WalletOptions() {
-  const { connectors, connect, isLoading, pendingConnector } = useConnect()
+  const { connectors, connect } = useConnect()
 
   return (
     <Card className="w-full max-w-sm mx-auto mt-10 bg-[#121212] border border-[#2c2c2c] text-gray-100 shadow-2xl rounded-2xl">
@@ -31,8 +31,7 @@ export function WalletOptions() {
             key={connector.uid}
             connector={connector}
             onClick={() => connect({ connector })}
-            isPending={isLoading && pendingConnector?.uid === connector.uid}
-          />
+           />
         ))}
       </CardContent>
       <CardFooter className="text-xs text-gray-500 border-t border-[#2c2c2c] pt-3">

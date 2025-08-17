@@ -1,23 +1,22 @@
 "use client"
 
 import React, { useEffect, useState, useMemo } from "react"
-import { CalendarIcon, SearchIcon } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
 import { Input } from "@/components/ui/input"
 import { formatEther } from "viem"
 import { useAccount } from "wagmi"
 import { getArticleCount, getArticleDetails, checkArticleAccess, purchaseAccess } from "@/app/utils/readArticle"
 import { useRouter } from "next/navigation"
+import { SearchIcon } from "lucide-react"
 
 type Article = {
   id: number
   title: string
   ipfsHash: string
   price: string
-  author: string
+  publisher: string
   hasAccess: boolean
 }
 
@@ -48,12 +47,20 @@ export default function HomePage() {
       const total = await getArticleCount()
       const articles: Article[] = []
 
-      for (let i = 0; i < total; i++) {
-        const [title, ipfsHash, priceBN, author] = await getArticleDetails(i, userAddress)
-        const price = formatEther(priceBN)
+    for (let i = 0; i < total; i++) {
+        const { title, ipfsHash, price, publisher} = await getArticleDetails(i, userAddress);
+
+        // format the bigint price into a string in ETH 
         const hasAccess = await checkArticleAccess(userAddress, i)
 
-        articles.push({ id: i, title, ipfsHash, price, author, hasAccess })
+        articles.push({
+  id: i,
+  title,
+  ipfsHash,
+  price: formatEther(price),  // string like "0.1"
+  publisher,
+  hasAccess
+})
       }
 
       setPublicArticles(articles.filter(a => a.price === "0"))
@@ -88,7 +95,7 @@ export default function HomePage() {
       articles.filter(
         a =>
           a.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-          a.author.toLowerCase().includes(debouncedSearch.toLowerCase())
+          a.publisher.toLowerCase().includes(debouncedSearch.toLowerCase())
       )
   }, [debouncedSearch])
 
@@ -128,21 +135,21 @@ export default function HomePage() {
       {/* Article Sections */}
       <div className="space-y-12">
         {/* Public Articles */}
-        <Section title="Public Articles" color="bg- text-green-100">
+        <Section title="Public Articles" >
           {filterBySearch(publicArticles).map(article => (
             <ArticleCard key={article.id} article={article} preview />
           ))}
         </Section>
 
         {/* Your Purchased Articles */}
-        <Section title="Your Purchased Articles" color="bg-blue-800 text-blue-100">
+        <Section title="Your Purchased Articles">
           {filterBySearch(ownedArticles).map(article => (
             <ArticleCard key={article.id} article={article} preview />
           ))}
         </Section>
 
         {/* Premium Articles */}
-        <Section title="Premium Articles" color="bg-red-800 text-red-100">
+        <Section title="Premium Articles">
           {filterBySearch(lockedArticles).map(article => (
             <ArticleCard
               key={article.id}
@@ -161,7 +168,7 @@ export default function HomePage() {
 /* Section Component */
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-gray-800 p-4 rounded-2xl  mb-8">
+    <div className="bg-gray-950 p-4 rounded-2xl  mb-8">
       <h2 className="text-lg font-semibold mb-3">{title}</h2>
       <div className="grid gap-4 grid-cols-[repeat(auto-fill,minmax(260px,1fr))]">
         {React.Children.count(children) > 0 ? children : (
@@ -191,9 +198,9 @@ function ArticleCard({
   const reloadIframe = () => setIframeKey((prev) => prev + 1);
   const router = useRouter();
   return (
-   <Card className="bg-black text-white border border-gray-200 rounded-lg shadow-sm">
+   <Card className="bg-gray-980 text-white border border-gray-200 rounded-lg shadow-sm">
   <CardHeader>
-    <CardTitle className="text-lg font-semibold">{article.title}</CardTitle>
+    <CardTitle className="text-lg font-semibold truncate">{article.title}</CardTitle>
     <CardDescription className="text-xs text-gray-400 truncate">
       IPFS: {article.ipfsHash}
     </CardDescription>
@@ -230,11 +237,11 @@ function ArticleCard({
     <div className="mt-4 flex items-center space-x-3 text-sm">
       <Avatar className="h-8 w-8">
         <AvatarFallback>
-          {article.author.slice(2, 4).toUpperCase()}
+          {article.publisher.slice(2, 4).toUpperCase()}
         </AvatarFallback>
       </Avatar>
       <div className="min-w-0">
-        <p className="font-medium truncate">{article.author}</p>
+        <p className="font-medium truncate">{article.publisher}</p>
         <p className="text-gray-500">On-chain</p>
       </div>
     </div>

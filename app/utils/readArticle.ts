@@ -10,9 +10,8 @@ export const publicClient = createPublicClient({
   chain: sepolia,
   transport: http(),
 }); 
-
-const articleRegistryConfig = {
-  address:  getAddress("0x6f340420ac266c332cdda5c05ad5f75a10ed5e9a"),
+const articleRegistryConfig = { 
+  address:  getAddress(process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as string),
   abi: abi,
 };
 
@@ -21,8 +20,7 @@ interface Article {
   title: string;
   ipfsHash: string;
   price: bigint;
-  publisher: string;
-  exists: boolean;
+  publisher: string; 
 }
 
 interface ArticleList {
@@ -36,7 +34,7 @@ interface ArticleList {
 export async function getArticleCount() {
   try {
     const count = await readContract(config,{
-      address: publishingHubConfig.address,
+      address: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as `0x${string}`,
       abi: publishingHubConfig.abi,
       functionName: "articleCount",
     }); 
@@ -47,17 +45,19 @@ export async function getArticleCount() {
   }
 }
 
- 
 export async function getArticleDetails(
-  articleId: number, 
+  articleId: number,
   userAddress: string
 ): Promise<Article> {
-  return await readContract(config, {
+  const [title, ipfsHash, price, publisher] = await readContract(config, {
     ...articleRegistryConfig,
     functionName: "getArticle",
     args: [articleId, userAddress],
-  }) as Promise<Article>;
+  }) as [string, string, bigint, string];
+
+  return { title, ipfsHash, price, publisher };
 }
+
 
 export async function getAllArticles(
   userAddress: string

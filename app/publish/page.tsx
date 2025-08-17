@@ -81,6 +81,7 @@ export default function UploadArticlePage() {
   };
 
   const etherscanBase = "https://sepolia.etherscan.io/tx/";
+console.log("Contract Address in use:", process.env.NEXT_PUBLIC_CONTRACT_ADDRESS);
 
   return (
     <div className="p-6 flex flex-col lg:flex-row gap-6 bg-gray-950 min-h-screen text-gray-100">
