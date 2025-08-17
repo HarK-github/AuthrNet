@@ -33,7 +33,7 @@ export default function HomePage() {
   const [purchasingId, setPurchasingId] = useState<number | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [debouncedSearch, setDebouncedSearch] = useState("")
-
+  console.log("before this");
   const { address: userAddress, isConnected } = useAccount()
   const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS! // pass into each function
   console.log(CONTRACT_ADDRESS);
