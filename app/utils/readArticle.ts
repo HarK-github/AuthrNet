@@ -2,8 +2,7 @@ import { readContract, writeContract, waitForTransactionReceipt } from "wagmi/ac
 import { getAddress, parseEther } from "viem";
 import { config } from "@/app/config";
 import { abi } from "@/contracts/abis/ArticleRegistry.json";
-import { publishingHubConfig } from "./contractHelpers";
-
+ 
 // Type definitions
 interface Article {
   title: string;
@@ -25,7 +24,7 @@ export async function getArticleCount(contractAddress: string) {
   try {
     const count = await readContract(config, {
       address: getAddress(contractAddress),
-      abi: publishingHubConfig.abi,
+      abi: abi,
       functionName: "articleCount",
     });
     return Number(count);
