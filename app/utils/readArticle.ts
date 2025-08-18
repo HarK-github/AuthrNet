@@ -72,9 +72,7 @@ export async function checkArticleAccess(
     functionName: "checkAccess",
     args: [userAddress, articleId],
   })) as boolean;
-}
-
-// Write functions
+} 
 export async function publishArticle(
   title: string,
   ipfsHash: string,

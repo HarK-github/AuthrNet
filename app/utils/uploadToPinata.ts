@@ -24,5 +24,5 @@ export const uploadToPinata = async (file: File) => {
     },
   })
 
-  return res.data.IpfsHash // this is your CID
+  return res.data.IpfsHash  
 }

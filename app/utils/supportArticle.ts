@@ -111,7 +111,7 @@ export async function supportAuthor(authorAddress: string, amountEth: string,CON
     });
     const publicClient = getClient();
     await publicClient.waitForTransactionReceipt({ hash: txHash });
-    return txHash; // return string
+    return txHash; 
   } catch (err) {
     console.error("Support transaction failed:", err);
     throw err;

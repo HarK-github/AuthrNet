@@ -33,6 +33,17 @@ contract ArticleRegistry {
         contractName = "ArticleRegistry";
     }
 
+    // Track unique authors and their published count
+    mapping(address => uint256) public authorArticleCount;
+    address[] public allAuthors;
+
+     function _trackAuthor(address _author) internal {
+        if (authorArticleCount[_author] == 0) {
+            allAuthors.push(_author); // new author
+        }
+        authorArticleCount[_author] += 1;
+    }
+
     // Publish new article
     function publishArticle(
         string memory _title,
@@ -48,11 +59,35 @@ contract ArticleRegistry {
             exists: true
         });
 
-        // Grant publisher automatic access
-        accessPermissions[msg.sender][articleId] = true;
+         accessPermissions[msg.sender][articleId] = true;
 
         emit ArticlePublished(articleId, _title, _price);
+        _trackAuthor(msg.sender);
         return articleId;
+    }
+     // Function to get all authors and their article counts
+    function getAllAuthors() public view returns (address[] memory authors, uint256[] memory counts) {
+        uint256 len = allAuthors.length;
+        authors = new address[](len);
+        counts = new uint256[](len);
+        for (uint256 i = 0; i < len; i++) {
+            authors[i] = allAuthors[i];
+            counts[i] = authorArticleCount[allAuthors[i]];
+        }
+    }
+
+    // Support payment for an author
+    event AuthorSupported(address indexed supporter, address indexed author, uint256 amount);
+
+    function supportAuthor(address payable _author) public payable {
+        require(_author != address(0), "Invalid author address");
+        require(authorArticleCount[_author] > 0, "Address is not an author");
+        require(msg.value > 0, "Must send ETH");
+
+        (bool sent, ) = _author.call{value: msg.value}("");
+        require(sent, "Payment failed");
+
+        emit AuthorSupported(msg.sender, _author, msg.value);
     }
 
     // Grant access to article
@@ -148,4 +183,4 @@ contract ArticleRegistry {
         require(newOwner != address(0), "Invalid address");
         owner = newOwner;
     }
-}
+}  
