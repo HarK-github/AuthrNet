@@ -4,8 +4,6 @@ import { sepolia } from 'wagmi/chains';
 import { getPublicClient, getWalletClient } from '@wagmi/core';
 import { config } from '@/app/config';
 
-const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ;
-
 // ---------------------
 // Types
 // ---------------------
@@ -37,7 +35,7 @@ function getWallet() {
 // ---------------------
 // Fetch All Authors
 // ---------------------
-export async function fetchAllAuthors(): Promise<Author[]> { 
+export async function fetchAllAuthors(CONTRACT_ADDRESS:string): Promise<Author[]> { 
   try {
     const client = getClient();
 
@@ -65,7 +63,7 @@ export async function fetchAllAuthors(): Promise<Author[]> {
 // ---------------------
 // Fetch Articles
 // ---------------------
-export async function fetchArticles(userAddress: string): Promise<Article[]> {
+export async function fetchArticles(userAddress: string,CONTRACT_ADDRESS:string): Promise<Article[]> {
   try {
     const client = getClient();
     const result = await client.readContract({
@@ -101,7 +99,7 @@ export async function fetchArticles(userAddress: string): Promise<Article[]> {
 // ---------------------
 // Support an Author
 // ---------------------
-export async function supportAuthor(authorAddress: string, amountEth: string): Promise<string> {
+export async function supportAuthor(authorAddress: string, amountEth: string,CONTRACT_ADDRESS:string): Promise<string> {
   try {
     const walletClient = await getWallet();
     const txHash = await walletClient.writeContract({
@@ -124,7 +122,7 @@ export async function supportAuthor(authorAddress: string, amountEth: string): P
 // ---------------------
 // Purchase Article Access
 // ---------------------
-export async function purchaseArticle(articleId: number, amountEth: string) {
+export async function purchaseArticle(articleId: number, amountEth: string,CONTRACT_ADDRESS:string) {
   try {
     const walletClient = await getWallet();
     const txHash = await walletClient.writeContract({

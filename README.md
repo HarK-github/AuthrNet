@@ -176,11 +176,33 @@ contracts/
 
 - **ArticleRegistry.sol** – Manages publishing, ownership, and premium access.
 
-Deploy:
+Deploying the contract:
+ 
 
-```bash
-npx hardhat run scripts/deploy.js --network <network-name>
-```
+### **Deploying on Remix IDE**
+
+1. Go to [Remix IDE](https://remix.ethereum.org/).
+2. Create a new file under the `contracts/` folder and paste the `ArticleRegistry.sol` code.
+3. Compile the contract:
+
+   * Click on the **Solidity Compiler** tab (left panel).
+   * Select compiler version `0.8.x` (matches your pragma).
+   * Click **Compile ArticleRegistry.sol**.
+4. Deploy the contract:
+
+   * Switch to the **Deploy & Run Transactions** tab (left panel).
+   * Select your environment:
+
+     * `Injected Web3` to deploy via MetaMask to a testnet/mainnet.
+     * `Remix VM` to deploy locally in Remix’s VM.
+   * Ensure the correct account is selected.
+   * Click **Deploy** next to `ArticleRegistry`.
+5. Once deployed, the contract will appear under **Deployed Contracts**, where you can:
+
+   * Call `publishArticle`, `grantAccess`, `purchaseAccess`, etc.
+   * View `getArticle` and `getArticles`.
+6. Copy the contract deployed address and set it as the environment variable
+
 
 ---
 

@@ -21,9 +21,11 @@ export default function SupportAuthorsPage() {
 
   const { address: userAddress } = useAccount();
 
+  const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as `0x${string}`;
+
   useEffect(() => {
     async function fetchAuthors() {
-      const data = await fetchAllAuthors();
+      const data = await fetchAllAuthors(CONTRACT_ADDRESS);
       setAuthors(data);
     }
     fetchAuthors();
@@ -37,7 +39,7 @@ export default function SupportAuthorsPage() {
     setTxHash(null);
 
     try {
-      const txHash = await supportAuthor(selectedAuthor, amount);
+      const txHash = await supportAuthor(selectedAuthor, amount,CONTRACT_ADDRESS);
   setProgress(100);
   setTxHash(txHash); 
     } catch (err) {
