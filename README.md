@@ -10,6 +10,11 @@
 
 <br>
 
+| Screenshot 1 | Screenshot 2 |
+| -------- | -------- |
+|<img width="1280" height="730" alt="image" src="https://github.com/user-attachments/assets/29a5c330-52e4-4632-98c9-8876d46b8a33" />| <img width="1333" height="780" alt="image" src="https://github.com/user-attachments/assets/0ccd3457-b058-44c5-8af5-c5b98b8bfae6" />|
+
+
 [![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)](https://nextjs.org/) [![Ethereum](https://img.shields.io/badge/Ethereum-Smart%20Contracts-3C3C3D?logo=ethereum)](https://ethereum.org/)  [![IPFS](https://img.shields.io/badge/IPFS-Pinata-65C2CB?logo=ipfs)](https://ipfs.tech/)  [![Deployment](https://img.shields.io/badge/Deployed-✓-brightgreen)](#)  
 [![Progress](https://img.shields.io/badge/Status-completed-green)](#)  
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
